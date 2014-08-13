@@ -1,4 +1,5 @@
 import re
+import itertools
 
 from jsonschema import _utils
 from jsonschema.exceptions import FormatError, ValidationError
@@ -50,6 +51,50 @@ def items(validator, items, instance, schema):
                 item, subschema, path=index, schema_path=index,
             ):
                 yield error
+
+
+def anyItems(validator, items, instance, schema):
+    if not validator.is_type(instance, "array"):
+        return
+
+    if validator.is_type(items, "object"):
+        all_count = error_count = 0
+        all_errors = []
+        objects = enumerate(instance)
+        for index, item in objects:
+            all_count += 1
+            errors = []
+            for error in validator.descend(item, items, path=index):
+                errors.append(error)
+            if errors:
+                error_count += 1
+                all_errors.extend(errors)
+
+        if len(instance) <= error_count:
+            yield ValidationError(
+                "%r is not valid under any of the given schemas" % (instance,),
+                context=all_errors,
+            )
+    else:
+        all_count = error_count = 0
+        all_errors = []
+        objects = itertools.product(enumerate(instance), items)
+        for (index, item), subschema in objects:
+            all_count += 1
+            errors = []
+            for error in validator.descend(
+                    item, subschema, path=index, schema_path=index
+            ):
+                errors.append(error)
+            if errors:
+                error_count += 1
+                all_errors.extend(errors)
+
+        if all_count <= error_count:
+            yield ValidationError(
+                "%r is not valid under any of the given schemas" % (instance,),
+                context=all_errors,
+            )
 
 
 def additionalItems(validator, aI, instance, schema):

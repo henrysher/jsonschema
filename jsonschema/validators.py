@@ -194,6 +194,7 @@ Draft4Validator = create(
         u"enum" : _validators.enum,
         u"format" : _validators.format,
         u"items" : _validators.items,
+        u"anyItems" : _validators.anyItems,
         u"maxItems" : _validators.maxItems,
         u"maxLength" : _validators.maxLength,
         u"maxProperties" : _validators.maxProperties_draft4,
