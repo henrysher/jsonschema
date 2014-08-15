@@ -90,7 +90,7 @@ def anyItems(validator, items, instance, schema):
                 error_count += 1
                 all_errors.extend(errors)
 
-        if all_count <= error_count:
+        if all_count-error_count != len(items):
             yield ValidationError(
                 "%r is not valid under any of the given schemas" % (instance,),
                 context=all_errors,
